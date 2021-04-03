@@ -1,0 +1,35 @@
+{
+  "name": "@rx-signals/angular-provider",
+  "version": "1.0.0",
+  "description": "angular module for an opinionated @rx-signals/store integration",
+  "author": "Gerd Neudert",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gneu77/rx-signals-angular-provider"
+  },
+  "keywords": [
+    "angular",
+    "rx-signals",
+    "rxjs",
+    "reactive programming",
+    "behaviors",
+    "events",
+    "signals",
+    "streams",
+    "store",
+    "effects management",
+    "state management",
+    "dependency injection",
+    "typescript"
+  ],
+  "peerDependencies": {
+    "@angular/common": "^10.0.0",
+    "@angular/core": "^10.0.0",
+    "@rx-signals/store": "^2.2.2",
+    "rxjs": "^6.4.0"
+  },
+  "dependencies": {
+    "tslib": "^2.0.0"
+  }
+}
