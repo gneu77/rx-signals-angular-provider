@@ -1,6 +1,6 @@
 {
   "name": "@rx-signals/angular-provider",
-  "version": "1.0.1",
+  "version": "3.0.0-rc1",
   "description": "angular module for an opinionated @rx-signals/store integration",
   "author": "Gerd Neudert",
   "license": "MIT",
@@ -26,7 +26,7 @@
   "peerDependencies": {
     "@angular/common": ">=10.0.0",
     "@angular/core": ">=10.0.0",
-    "@rx-signals/store": "^2.2.2",
+    "@rx-signals/store": ">=3.0.0-rc14",
     "rxjs": "^6.4.0"
   },
   "dependencies": {
