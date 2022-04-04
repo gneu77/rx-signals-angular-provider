@@ -1,60 +1,51 @@
-import { NgModule, Optional, SkipSelf } from '@angular/core';
-import { Store, TypeIdentifier } from '@rx-signals/store';
-import { take } from 'rxjs/operators';
+import { ModuleWithProviders, NgModule } from '@angular/core';
+import { Store } from '@rx-signals/store';
 
-const dummyStore = new Store();
-const storeSymbol: TypeIdentifier<Store> = { symbol: Symbol('appStore') };
-const storeEventSymbol: TypeIdentifier<Store> = { symbol: Symbol('appStoreEvent') };
-
-export type WithStoreCallback = (store: Store) => void;
-
-/**
- * This function can be used to execute code with the same store instance
- * this is being injected by the RxSignalsStoreModule.
- * In case this function is called in context of a testWithStore callback,
- * the store provided by testWithStore will be used instead.
- *
- * @param {WithStoreCallback} cb - the callback receiving the store as argument
- * @returns {void}
- */
-export const withStore = (cb: WithStoreCallback): void => {
-  dummyStore
-    .getBehavior(storeSymbol)
-    .pipe(take(1))
-    .subscribe(store => cb(store));
-};
-
-/**
- * This function can be used to execute code with a fresh new store instance.
- * If any code executed in context of the given callback uses the withStore function,
- * the latter functions callback will also receive the fresh new store instance instead
- * of the store injected by the RxSignalsStoreModule
- *
- * @param {WithStoreCallback} cb - the callback receiving the store as argument
- * @returns {void}
- */
-export const testWithStore = (cb: WithStoreCallback): void => {
-  dummyStore.removeBehaviorSources(storeSymbol);
-  const store = new Store();
-  dummyStore.addState(storeSymbol, store);
-  cb(store);
-};
+// The root store is a singleton that should live as long as the whole application
+// In case other lifecycles are required (e.g. restricted to the lifecycle of
+// a certain module), corresponding child-stores should be derived from the
+// root store
+const rootStore = new Store();
 
 @NgModule({
-  providers: [Store],
 })
 export class RxSignalsStoreModule {
-  constructor(private store: Store, @Optional() @SkipSelf() self?: RxSignalsStoreModule) {
-    if (self) {
-      throw new Error(
-        'RxSignalsStoreModule is already loaded. Import it in a single module (e.g. CoreModule) only!',
-      );
+  
+  /**
+   * Use withRootStore, if you need the root store that shares the lifecycle of the whole application.
+   * Also lazy-loaded feature modules will receive the same root-store instance, if you use withRootStore.
+   * This should be the standard case.
+   *
+   * @param {function} setup - optional callback that receives the store and performs setup
+   * @returns {ModuleWithProviders<RxSignalsStoreModule>} the module providing the root-store
+   */
+  static withRootStore(setup?: (store: Store) => void): ModuleWithProviders<RxSignalsStoreModule> {
+    if (setup) {
+      setup(rootStore);
     }
-    if (dummyStore.getNumberOfBehaviorSources(storeSymbol) === 0) {
-      dummyStore.addState(storeSymbol, this.store);
-      dummyStore.addReducer(storeSymbol, storeEventSymbol, store => store);
-    } else {
-      dummyStore.dispatchEvent(storeEventSymbol, this.store);
-    }
+    return {
+      ngModule: RxSignalsStoreModule,
+      providers: [{ provide: Store, useValue: rootStore }],
+    };
   }
+
+  /**
+   * Use withChildStore, if you need a child store that is derived from the root-store.
+   * See store.createChildStore() for further documentation on child stores.
+   *
+   * @param {function} setup - optional callback that receives the child-store and performs setup
+   * @returns {ModuleWithProviders<RxSignalsStoreModule>} the module providing the child-store
+   */
+  static withChildStore(setup?: (store: Store) => void): ModuleWithProviders<RxSignalsStoreModule> {
+    const childStore = rootStore.createChildStore();
+    if (setup) {
+      setup(childStore);
+    }
+    return {
+      ngModule: RxSignalsStoreModule,
+      providers: [{ provide: Store, useValue: childStore }],
+    };
+  }
+
+  constructor()
 }

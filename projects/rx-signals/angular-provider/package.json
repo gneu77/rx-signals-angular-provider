@@ -26,8 +26,7 @@
   "peerDependencies": {
     "@angular/common": ">=10.0.0",
     "@angular/core": ">=10.0.0",
-    "@rx-signals/store": ">=3.0.0-rc14",
-    "rxjs": "^6.4.0"
+    "@rx-signals/store": ">=3.0.0-rc14"
   },
   "dependencies": {
     "tslib": "^2.0.0"
