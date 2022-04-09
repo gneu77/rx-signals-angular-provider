@@ -8,6 +8,7 @@ import { Store } from '@rx-signals/store';
 const rootStore = new Store();
 
 @NgModule({
+  providers: [{ provide: Store, useValue: rootStore }] // default to rootStore, if none of the static providers is used
 })
 export class RxSignalsStoreModule {
   
@@ -20,12 +21,16 @@ export class RxSignalsStoreModule {
    * @returns {ModuleWithProviders<RxSignalsStoreModule>} the module providing the root-store
    */
   static withRootStore(setup?: (store: Store) => void): ModuleWithProviders<RxSignalsStoreModule> {
-    if (setup) {
-      setup(rootStore);
-    }
+    let doSetup = (setup ?? null) !== null;
     return {
       ngModule: RxSignalsStoreModule,
-      providers: [{ provide: Store, useValue: rootStore }],
+      providers: [{ provide: Store, useFactory: () => {
+        if (doSetup && setup) {
+          doSetup = false;
+          setup(rootStore);
+        }
+        return rootStore;
+      }}],
     };
   }
 
@@ -37,15 +42,17 @@ export class RxSignalsStoreModule {
    * @returns {ModuleWithProviders<RxSignalsStoreModule>} the module providing the child-store
    */
   static withChildStore(setup?: (store: Store) => void): ModuleWithProviders<RxSignalsStoreModule> {
+    let doSetup = (setup ?? null) !== null;
     const childStore = rootStore.createChildStore();
-    if (setup) {
-      setup(childStore);
-    }
     return {
       ngModule: RxSignalsStoreModule,
-      providers: [{ provide: Store, useValue: childStore }],
+      providers: [{ provide: Store, useFactory: () => {
+        if (doSetup && setup) {
+          doSetup = false;
+          setup(childStore);
+        }
+        return childStore;
+      }}],
     };
   }
-
-  constructor()
 }
